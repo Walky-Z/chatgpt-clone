@@ -18,7 +18,7 @@ import requests
 from dotenv import load_dotenv, find_dotenv
 load_dotenv(find_dotenv(), override=True)
 
-def count_tokens(string: str, model_name="gpt-4") -> int:
+def count_tokens(string: str, model_name="gpt-3.5-turbo") -> int:
     """Returns the number of tokens in a text string."""
     encoding = tiktoken.encoding_for_model(model_name)
     num_tokens = len(encoding.encode(string))
