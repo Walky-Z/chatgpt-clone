@@ -4,3 +4,5 @@ streamlit
 streamlit-chat
 tiktoken
 python-dotenv
+fastapi
+uvicorn

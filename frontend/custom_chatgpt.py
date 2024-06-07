@@ -1,16 +1,30 @@
+from itertools import count
+from pyexpat import model
 from wsgiref.simple_server import sys_version
 from langchain.chat_models import ChatOpenAI
 from langchain.schema import SystemMessage, HumanMessage, AIMessage
 from langchain.chains import LLMChain
 from langchain.prompts import ChatPromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder
 from langchain.memory import ConversationBufferMemory, FileChatMessageHistory
+from sympy import total_degree
+import tiktoken
 
 import streamlit as st
 from streamlit_chat import message
+import requests
+
 
 # Load .env
 from dotenv import load_dotenv, find_dotenv
 load_dotenv(find_dotenv(), override=True)
+
+def count_tokens(string: str, model_name="gpt-4") -> int:
+    """Returns the number of tokens in a text string."""
+    encoding = tiktoken.encoding_for_model(model_name)
+    num_tokens = len(encoding.encode(string))
+    return num_tokens
+
+
 
 st.set_page_config(
     page_title='You Custom Assistant',
@@ -26,6 +40,7 @@ if 'messages' not in st.session_state:
 with st.sidebar:
     system_message = st.text_input(label='System role')
     user_prompt = st.text_input(label='Send a prompt')
+
     if system_message:
         if not any(isinstance(x, SystemMessage) for x in st.session_state.messages):
             st.session_state.messages.append(
@@ -33,13 +48,26 @@ with st.sidebar:
             )
         # st.write(st.sess ion_state.messages)
     if user_prompt:
-        st.session_state.messages.append(
-            HumanMessage(content=user_prompt)
-        )
+        human_message = HumanMessage(content=user_prompt)
+
+        st.session_state.messages.append(human_message)
+
         with st.spinner('Working on your request ...'):
             response = chat(st.session_state.messages)
 
-        st.session_state.messages.append(AIMessage(content=response.content))
+        ai_message = AIMessage(content=response.content)
+
+        construct_tokens = count_tokens(str(st.session_state.messages)[1:-1])
+
+        st.session_state.messages.append(ai_message)
+
+        # Count tokens after adding the AI response
+        #total_tokens =sum([count_tokens(message.content) for message in st.session_state.messages])
+        total_tokens = construct_tokens + count_tokens(ai_message.content)
+
+
+        print(f'Nombre total de tokens: {total_tokens}')
+        print(st.session_state.messages)
 
 #st.session_state.messages
 # message('this is chatgpt', is_user=False)
