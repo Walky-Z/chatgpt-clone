@@ -6,19 +6,24 @@ from collections import defaultdict
 app = FastAPI()
 
 # Utilisation de defaultdict pour simuler la base de données en mémoire
-db = defaultdict(lambda: {'tokens': 1000, 'reset_time': datetime.now() + timedelta(days=1)})
+default_tokens = 1000
+db = defaultdict(lambda: {'tokens': default_tokens, 'reset_time': datetime.now() + timedelta(days=1)})
 
-@app.post("/process_request/{ip_address}")
-async def process_request(ip_address: str, prompt: str, response_length_estimate: int):
+@app.get("/tokens_status")
+def tokens_status(ip_address: str):
+    data = db[ip_address]
+    return {"remaining_tokens": data['tokens'], "initial_tokens": default_tokens}
+
+
+@app.post("/process_request")
+async def process_request(ip_address: str, tokens_used: int):
     data = db[ip_address]
     if datetime.now() >= data['reset_time']:
-        data['tokens'] = 1000  # Reset quotidien
+        data['tokens'] = default_tokens  # Reset quotidien
         data['reset_time'] = datetime.now() + timedelta(days=1)
 
-    total_tokens = len(prompt.split()) + response_length_estimate  # Estimation simplifiée
-
-    if data['tokens'] >= total_tokens:
-        data['tokens'] -= total_tokens  # Décompte des tokens
+    if data['tokens'] >= tokens_used:
+        data['tokens'] -= tokens_used  # Décompte des tokens
         # Ici, vous traiteriez la requête et généreriez la réponse
         return {"message": "Requête traitée avec succès", "remaining_tokens": data['tokens']}
     else:

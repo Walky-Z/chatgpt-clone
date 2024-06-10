@@ -1,3 +1,4 @@
+from cgitb import text
 from itertools import count
 from pyexpat import model
 from wsgiref.simple_server import sys_version
@@ -24,7 +25,24 @@ def count_tokens(string: str, model_name="gpt-3.5-turbo") -> int:
     num_tokens = len(encoding.encode(string))
     return num_tokens
 
+def get_external_ip():
+    response = requests.get('https://api.ipify.org')
+    return response.text
 
+def get_tokens():
+    response = requests.get(url="http://127.0.0.1:8000/tokens_status", params=ip).json()
+    print(response)
+    return response['remaining_tokens'], response['initial_tokens']
+
+def update_tokens(text: st.text, bar: st.progress):
+    remaining, initial = get_tokens()
+    per_remaining_tokens = remaining/initial
+    text.text(f"Remaining Tokens : {remaining}/{initial}")
+    bar.progress(per_remaining_tokens)
+
+
+ip_adress = get_external_ip()
+print(ip_adress)
 
 st.set_page_config(
     page_title='You Custom Assistant',
@@ -39,7 +57,13 @@ if 'messages' not in st.session_state:
 
 with st.sidebar:
     system_message = st.text_input(label='System role')
-    user_prompt = st.text_input(label='Send a prompt')
+    #user_prompt = st.text_input(label='Send a prompt')
+    user_prompt = st.text_area("Send a prompt :", height=200, key="text_area")
+    ip = {'ip_address': ip_adress}
+    remaining, initial = get_tokens()
+    per_remaining_tokens = remaining/initial
+    remaing_text = st.text(f"Remaining Tokens : {remaining}/{initial}")
+    progress_bar = st.progress(per_remaining_tokens)
 
     if system_message:
         if not any(isinstance(x, SystemMessage) for x in st.session_state.messages):
@@ -64,7 +88,12 @@ with st.sidebar:
         # Count tokens after adding the AI response
         #total_tokens =sum([count_tokens(message.content) for message in st.session_state.messages])
         total_tokens = construct_tokens + count_tokens(ai_message.content)
-
+        params = {
+            'ip_address': ip_adress,
+            'tokens_used': total_tokens
+        }
+        requests.post(url='http://127.0.0.1:8000/process_request', params=params)
+        update_tokens(remaing_text, progress_bar)
 
         print(f'Nombre total de tokens: {total_tokens}')
         print(st.session_state.messages)
