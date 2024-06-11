@@ -22,11 +22,12 @@ async def process_request(ip_address: str, tokens_used: int):
         data['tokens'] = default_tokens  # Reset quotidien
         data['reset_time'] = datetime.now() + timedelta(days=1)
 
-    if data['tokens'] >= tokens_used:
+    if data['tokens'] >= 0:
         data['tokens'] -= tokens_used  # Décompte des tokens
         # Ici, vous traiteriez la requête et généreriez la réponse
         return {"message": "Requête traitée avec succès", "remaining_tokens": data['tokens']}
     else:
+        data['tokens'] = 0
         raise HTTPException(status_code=429, detail="Token limit reached")
 
 if __name__ == "__main__":
