@@ -30,7 +30,11 @@ def get_external_ip():
     return response.text
 
 def get_tokens():
-    response = requests.get(url="http://127.0.0.1:8000/tokens_status", params=ip).json()
+    params = {
+        'ip_address': ip_adress,
+        'tokens_used': 0
+    }
+    response = requests.post(url='http://127.0.0.1:8000/process_request', params=params).json()
     print(response)
     return response['remaining_tokens'], response['initial_tokens']
 
