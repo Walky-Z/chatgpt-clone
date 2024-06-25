@@ -22,14 +22,14 @@ async def process_request(ip_address: str, tokens_used: int):
         data['tokens'] = default_tokens  # Reset quotidien
         data['reset_time'] = datetime.now() + timedelta(days=1)
 
-    if data['tokens'] >= 0:
+    if data['tokens'] >= tokens_used:
         data['tokens'] -= tokens_used  # Décompte des tokens
         # Ici, vous traiteriez la requête et généreriez la réponse
         #return {"message": "Requête traitée avec succès", "remaining_tokens": data['tokens']}
-        return {"remaining_tokens": data['tokens'], "initial_tokens": default_tokens}
+        return {"remaining_tokens": data['tokens'], "initial_tokens": default_tokens, "valid_request": True}
     else:
-        data['tokens'] = 0
-        raise HTTPException(status_code=429, detail="Token limit reached")
+        return {"remaining_tokens": data['tokens'], "initial_tokens": default_tokens, "valid_request": False}
+        #raise HTTPException(status_code=429, detail="Token limit reached")
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -80,23 +80,31 @@ with st.sidebar:
 
         st.session_state.messages.append(human_message)
 
-        with st.spinner('Working on your request ...'):
-            response = chat(st.session_state.messages)
-
-        ai_message = AIMessage(content=response.content)
-
         construct_tokens = count_tokens(str(st.session_state.messages)[1:-1])
+
+
+
+
+        params = {
+            'ip_address': ip_adress,
+            'tokens_used': construct_tokens
+        }
+        response = requests.post(url='http://127.0.0.1:8000/process_request', params=params).json()
+
+        if response["valid_request"]:
+            with st.spinner('Working on your request ...'):
+                call_chatgpt = chat(st.session_state.messages)
+            ai_message = AIMessage(content=call_chatgpt.content)
+        else:
+             ai_message = AIMessage(content="Not enough tokens for your request")
+
 
         st.session_state.messages.append(ai_message)
 
         # Count tokens after adding the AI response
         #total_tokens =sum([count_tokens(message.content) for message in st.session_state.messages])
         total_tokens = construct_tokens + count_tokens(ai_message.content)
-        params = {
-            'ip_address': ip_adress,
-            'tokens_used': total_tokens
-        }
-        requests.post(url='http://127.0.0.1:8000/process_request', params=params)
+
         update_tokens(remaing_text, progress_bar)
 
         print(f'Nombre total de tokens: {total_tokens}')
