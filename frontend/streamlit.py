@@ -61,6 +61,9 @@ if 'logged_in' not in st.session_state:
 if 'refresh' not in st.session_state:
     st.session_state.refresh = False
 
+if 'username' not in st.session_state:
+    st.session_state.username = None
+
 
 
 with st.sidebar:
@@ -82,9 +85,9 @@ with st.sidebar:
         show_create_user_form()
 
     if st.session_state.show_login:
-        login = False
-        login = show_login_form()
-        if login:
+        log = show_login_form()
+        if log[0]:
+            st.session_state.username = log[1]
             st.session_state.logged_in = True
             st.session_state.show_login = False
             st.experimental_rerun()
@@ -94,7 +97,7 @@ with st.sidebar:
     print(f'logged_in : {st.session_state.logged_in}')
 
     if st.session_state.logged_in:
-        st.write("Bienvenue dans votre tableau de bord!")
+        st.write(f"Bienvenue {st.session_state.username}, dans votre tableau de bord!")
         chat_bot(ip_adress)
 
 
