@@ -33,9 +33,10 @@ def show_login_form():
             secrets = load_secrets()
             hashed_password = hash_password(password)
             if username in secrets and secrets[username] == hashed_password:
-                st.success(f"Bienvenue, {username}!")
+                return True
             else:
                 st.error("Nom d'utilisateur ou mot de passe incorrect.")
+                return False
 
 # Fonction pour afficher le formulaire de création d'utilisateur
 def show_create_user_form():

@@ -18,6 +18,9 @@ from frontend.manage_tokens import get_external_ip
 def disable():
     st.session_state.disabled = True
 
+def refresh():
+    st.session_state.refresh = True
+
 # Initialize disabled for form_submit_button to False
 if "disabled" not in st.session_state:
     st.session_state.disabled = False
@@ -54,30 +57,49 @@ if 'show_create_user' not in st.session_state:
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
 
+# Initialiser l'état de session pour le rafraîchissement
+if 'refresh' not in st.session_state:
+    st.session_state.refresh = False
 
 
 
 with st.sidebar:
     # Boutons pour afficher/masquer les formulaires
     col1, col2 = st.columns(2)
-    with col1:
-        if st.button("Login"):
-            st.session_state.show_login = not st.session_state.show_login
-            st.session_state.show_create_user = False
+    if st.session_state.logged_in == False:
+        with col1:
+            if st.button("Login"):
+                st.session_state.show_login = not st.session_state.show_login
+                st.session_state.show_create_user = False
 
-    with col2:
-        if st.button("Créer un utilisateur"):
-            st.session_state.show_create_user = not st.session_state.show_create_user
-            st.session_state.show_login = False
+        with col2:
+            if st.button("Créer un utilisateur"):
+                st.session_state.show_create_user = not st.session_state.show_create_user
+                st.session_state.show_login = False
 
     # Affichage conditionnel du formulaire de connexion
-    if st.session_state.show_login and not st.session_state.logged_in:
-        show_login_form()
-
     if st.session_state.show_create_user:
         show_create_user_form()
 
-    chat_bot(ip_adress)
+    if st.session_state.show_login:
+        login = False
+        login = show_login_form()
+        if login:
+            st.session_state.logged_in = True
+            st.session_state.show_login = False
+            st.experimental_rerun()
+
+
+    print(f'show_login : {st.session_state.show_login}')
+    print(f'logged_in : {st.session_state.logged_in}')
+
+    if st.session_state.logged_in:
+        st.write("Bienvenue dans votre tableau de bord!")
+        chat_bot(ip_adress)
+
+
+
+
 
 #st.session_state.messages
 # message('this is chatgpt', is_user=False)
