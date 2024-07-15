@@ -1,10 +1,27 @@
 import pandas as pd
-
+import uuid
+import bcrypt
+import streamlit as st
 from google.cloud import bigquery
 from colorama import Fore, Style
 from pathlib import Path
+from api.params import *
+from frontend.st_auth import *
 
+def hash_password(password):
+    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
+def create_dataset():
+    client = bigquery.Client(project=GCP_PROJECT)
+    dataset_id = f"{GCP_PROJECT}.{BQ_DATASET}"
+    try:
+        client.get_dataset(dataset_id)  # Vérifie si le dataset existe
+        print(f"Dataset {BQ_DATASET} existe déjà.")
+    except:
+        dataset = bigquery.Dataset(dataset_id)
+        dataset.location = BQ_REGION
+        client.create_dataset(dataset)  # Crée le dataset
+        print(f"Dataset {BQ_DATASET} créé avec succès.")
 
 def load_data_to_bq(
         data: pd.DataFrame,
@@ -45,3 +62,49 @@ def load_data_to_bq(
 
 
     print(f"✅ Data saved to bigquery, with shape {data.shape}")
+
+def create_db():
+    query=f"""
+        CREATE TABLE IF NOT EXISTS `{GCP_PROJECT}.{BQ_DATASET}.utilisateurs` (
+        id STRING,
+        nom_utilisateur STRING,
+        mot_de_passe STRING,
+        tokens INT64
+        );
+    """
+    # Connexion à BigQuery
+    client = bigquery.Client(project=GCP_PROJECT)
+    query_job = client.query(query)
+
+    # Attente de l'achèvement de la requête
+    query_job.result()
+    print("Table créée avec succès")
+
+
+def add_user(user, pwd, tokens=1000):
+    pwd_hash = hash_password(pwd)
+    client = bigquery.Client(project=GCP_PROJECT)
+    table_id = f"{GCP_PROJECT}.{BQ_DATASET}.utilisateurs"
+    rows_to_insert = [
+        {u"id": str(uuid.uuid4()), u"nom_utilisateur": user, u"mot_de_passe": pwd_hash, u"tokens": tokens}
+    ] # uuid.uuid4() Permet d'avoir des id uniques
+    errors = client.insert_rows_json(table_id, rows_to_insert)
+    if errors:
+        st.error(f"Erreur lors de l'insertion des données : {errors}")
+    else:
+        st.success("Utilisateur ajouté avec succès")
+
+def check_user(user, pwd):
+    client = bigquery.Client(project=GCP_PROJECT)
+    query = f"""
+    SELECT mot_de_passe FROM `{GCP_PROJECT}.{BQ_DATASET}.utilisateurs`
+    WHERE nom_utilisateur = '{user}'
+    """
+    query_job = client.query(query)
+    results = query_job.result()
+
+    hashed_password = hash_password(pwd)
+    for row in results:
+        if bcrypt.checkpw(pwd.encode('utf-8'), row.mot_de_passe.encode('utf-8')):
+            return True
+    return False

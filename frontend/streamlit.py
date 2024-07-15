@@ -14,12 +14,19 @@ from streamlit_chat import message
 from frontend.st_auth import *
 from frontend.chat_bot import chat_bot
 from frontend.manage_tokens import get_external_ip
+from api.gcp_data import *
 
 def disable():
     st.session_state.disabled = True
 
 def refresh():
     st.session_state.refresh = True
+
+def init_db():
+    create_dataset()
+    create_db()
+    return True
+
 
 # Initialize disabled for form_submit_button to False
 if "disabled" not in st.session_state:
@@ -31,8 +38,12 @@ if "disabled" not in st.session_state:
 from dotenv import load_dotenv, find_dotenv
 load_dotenv(find_dotenv(), override=True)
 
+# if "GOOGLE_APPLICATION_CREDENTIALS" not in os.environ:
+#     st.error("La variable d'environnement GOOGLE_APPLICATION_CREDENTIALS n'est pas définie.")
+# else:
+#     st.success("Les identifiants Google Cloud sont configurés.")
 
-
+init_db()
 
 ip_adress = get_external_ip()
 print(ip_adress)

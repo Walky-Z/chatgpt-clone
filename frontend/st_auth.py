@@ -2,7 +2,7 @@ import toml
 import hashlib
 from api.params import *
 import streamlit as st
-
+from api.gcp_data import add_user, check_user
 
 # Charger les secrets existants
 def load_secrets():
@@ -19,8 +19,8 @@ def save_secrets(secrets):
         toml.dump(secrets, f)
 
 # Fonction pour hacher les mots de passe
-def hash_password(password):
-    return hashlib.sha256(password.encode()).hexdigest()
+# def hash_password(password):
+#     return hashlib.sha256(password.encode()).hexdigest()
 
 # Fonction pour afficher le formulaire de connexion
 def show_login_form():
@@ -30,9 +30,9 @@ def show_login_form():
         submit_button = st.form_submit_button("Se connecter")
 
         if submit_button:
-            secrets = load_secrets()
-            hashed_password = hash_password(password)
-            if username in secrets and secrets[username] == hashed_password:
+            # secrets = load_secrets()
+            # hashed_password = hash_password(password)
+            if check_user(username, password):
                 return [True, username]
             else:
                 st.error("Nom d'utilisateur ou mot de passe incorrect.")
@@ -48,9 +48,10 @@ def show_create_user_form():
 
         if create_button:
             if new_username and new_password:
-                secrets = load_secrets()
-                secrets[new_username] = hash_password(new_password)
-                save_secrets(secrets)
+                # secrets = load_secrets()
+                # secrets[new_username] = hash_password(new_password)
+                # save_secrets(secrets)
+                add_user(new_username, new_password)
                 st.success(f"Utilisateur {new_username} créé avec succès!")
             else:
                 st.error("Veuillez remplir tous les champs.")

@@ -6,3 +6,4 @@ tiktoken
 python-dotenv
 fastapi
 uvicorn
+bcrypt
