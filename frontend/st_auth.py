@@ -2,7 +2,7 @@ import toml
 import hashlib
 from api.params import *
 import streamlit as st
-from api.gcp_data import add_user, check_user
+from api.psql_data import add_user, check_user
 
 # Charger les secrets existants
 def load_secrets():

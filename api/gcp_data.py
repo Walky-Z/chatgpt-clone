@@ -63,7 +63,7 @@ def load_data_to_bq(
 
     print(f"✅ Data saved to bigquery, with shape {data.shape}")
 
-def create_db():
+def create_db_bq():
     query=f"""
         CREATE TABLE IF NOT EXISTS `{GCP_PROJECT}.{BQ_DATASET}.utilisateurs` (
         id STRING,
@@ -81,7 +81,7 @@ def create_db():
     print("Table créée avec succès")
 
 
-def add_user(user, pwd, tokens=1000):
+def add_user_bq(user, pwd, tokens=1000):
     pwd_hash = hash_password(pwd)
     client = bigquery.Client(project=GCP_PROJECT)
     table_id = f"{GCP_PROJECT}.{BQ_DATASET}.utilisateurs"
@@ -94,7 +94,7 @@ def add_user(user, pwd, tokens=1000):
     else:
         st.success("Utilisateur ajouté avec succès")
 
-def check_user(user, pwd):
+def check_user_bq(user, pwd):
     client = bigquery.Client(project=GCP_PROJECT)
     query = f"""
     SELECT mot_de_passe FROM `{GCP_PROJECT}.{BQ_DATASET}.utilisateurs`
@@ -103,7 +103,6 @@ def check_user(user, pwd):
     query_job = client.query(query)
     results = query_job.result()
 
-    hashed_password = hash_password(pwd)
     for row in results:
         if bcrypt.checkpw(pwd.encode('utf-8'), row.mot_de_passe.encode('utf-8')):
             return True

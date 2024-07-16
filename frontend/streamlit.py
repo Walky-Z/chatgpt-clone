@@ -15,6 +15,7 @@ from frontend.st_auth import *
 from frontend.chat_bot import chat_bot
 from frontend.manage_tokens import get_external_ip
 from api.gcp_data import *
+from api.psql_data import *
 
 def disable():
     st.session_state.disabled = True
@@ -23,7 +24,8 @@ def refresh():
     st.session_state.refresh = True
 
 def init_db():
-    create_dataset()
+    #create_dataset()
+    create_database()
     create_db()
     return True
 
