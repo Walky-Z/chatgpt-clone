@@ -59,7 +59,7 @@ def create_db():
     query = """
     CREATE TABLE IF NOT EXISTS utilisateurs (
         id UUID PRIMARY KEY,
-        user VARCHAR(255) UNIQUE NOT NULL,
+        username VARCHAR(255) UNIQUE NOT NULL,
         pwd VARCHAR(255) NOT NULL,
         tokens VARCHAR(255)
     );
@@ -73,14 +73,15 @@ def create_db():
     conn.close()
     print("Table créée avec succès")
 
-def check_user(user, pwd):
+
+def check_user(username, pwd):
     conn = get_db_connection()
     cursor = conn.cursor()
     query = """
     SELECT pwd FROM utilisateurs
-    WHERE user = %s
+    WHERE username = %s
     """
-    cursor.execute(query, (user,))
+    cursor.execute(query, (username,))
     result = cursor.fetchone()
     cursor.close()
     conn.close()
@@ -90,20 +91,24 @@ def check_user(user, pwd):
         return hashed_password == hash_password(pwd)
     return False
 
-def add_user(user, pwd, tokens):
+def add_user(username, pwd, tokens):
     conn = get_db_connection()
     cursor = conn.cursor()
     query = """
-    INSERT INTO utilisateurs (id, user, pwd, tokens)
+    INSERT INTO utilisateurs (id, username, pwd, tokens)
     VALUES (%s, %s, %s, %s)
     """
     pwd_hash = hash_password(pwd)
     try:
-        cursor.execute(query, (str(uuid.uuid4()), user, pwd_hash, tokens))
+        cursor.execute(query, (str(uuid.uuid4()), username, pwd_hash, tokens))
         conn.commit()
         st.success("Utilisateur ajouté avec succès")
     except psycopg2.IntegrityError as e:
         conn.rollback()
         st.error("Un utilisateur avec ce nom d'utilisateur existe déjà.")
-    cursor.close()
-    conn.close()
+    except Exception as e:
+        conn.rollback()
+        st.error(f"Une erreur est survenue : {e}")
+    finally:
+        cursor.close()
+        conn.close()

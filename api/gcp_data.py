@@ -9,7 +9,7 @@ from api.params import *
 from frontend.st_auth import *
 
 def hash_password(password):
-    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    return hashlib.sha256(password.encode()).hexdigest()
 
 def create_dataset():
     client = bigquery.Client(project=GCP_PROJECT)

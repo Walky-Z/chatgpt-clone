@@ -51,7 +51,7 @@ def show_create_user_form():
                 # secrets = load_secrets()
                 # secrets[new_username] = hash_password(new_password)
                 # save_secrets(secrets)
-                add_user(new_username, new_password)
-                st.success(f"Utilisateur {new_username} créé avec succès!")
+                add_user(new_username, new_password, 1000)
+                #st.success(f"Utilisateur {new_username} créé avec succès!")
             else:
                 st.error("Veuillez remplir tous les champs.")
