@@ -3,7 +3,7 @@ import tiktoken
 import requests
 import streamlit as st
 
-def count_tokens(string: str, model_name="gpt-4o") -> int:
+def count_tokens(string: str, model_name="gpt-3.5-turbo") -> int:
     """Returns the number of tokens in a text string."""
     encoding = tiktoken.encoding_for_model(model_name)
     num_tokens = len(encoding.encode(string))
