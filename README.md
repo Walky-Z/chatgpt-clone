@@ -20,7 +20,8 @@ Welcome to the ChatGPT-based Chatbot project! This project leverages several mod
 ### Prompt Screen
 ![Prompt Screen](./screens/logged_in_screen.png)
 
-
+### Chat Screen
+![Chat Screen](./screens/chat_screen.png)
 
 ## Features
 
@@ -36,7 +37,7 @@ Welcome to the ChatGPT-based Chatbot project! This project leverages several mod
 
 - Python 3.6+
 - AWS account with RDS access
-- Google Cloud account with BigQuery access
+- Google Cloud account with BigQuery access (optionnal)
 
 ### Steps
 
@@ -65,8 +66,15 @@ Welcome to the ChatGPT-based Chatbot project! This project leverages several mod
     Create a `.env` file in the root directory of your project and add your configuration variables:
 
     ```env
+    OPENAI_API_KEY="your_openai_key"
     DATABASE_URL=your_postgresql_database_url
     GOOGLE_APPLICATION_CREDENTIALS=path_to_your_google_credentials_json
+    SQL_ENDPOINT = "your_database_endpoint"
+    SQL_USERNAME = "your_sql_username"
+    SQL_PWD = "your_sql_password"
+    SQL_DATABASE = "name_of_your_database"
+    DEFAULT_DB = "postgres"
+    RDS_PORT = 5432
     ```
 
 5. **Run the FastAPI application:**
